@@ -6,20 +6,22 @@
 // Contains DAXPY operation for C
 #include "daxpy.h"
 
-#define N 10
-
 // Import ASM functions
 extern void scalarMultiply(long long int vectorSize, double origVector[], double resultVector[], double a);
 extern void vectorAddition(long long int vectorSize, double vector1[], double vector2[]);
 
-// Declare Vectors as Arrays
+
+//#define N 67108864 // 2^26
+#define N 16777216 // 2^24
+//#define N 1048576  // 2^20
+
+// #define N 10
+
 double X[N];
 double Y[N];
-double Z[N]; // Where Results for DAXPY is stored (For kernel C)
+double Z_C_kernel[N]; // Where Results for DAXPY is stored (For kernel C)
+double Z_ASM_kernel[N]; // Results for DAXPY is stored (for x86-64 kernel)
 
-// double X[N] = {1.5, 2.021, 3.789};
-// double Y[N] = {11.7892314, 12.8745, 13.142};
-// double Z[N] = {0, 0, 0};
 
 
 static void fillArray(double array[], int size) {
@@ -29,67 +31,110 @@ static void fillArray(double array[], int size) {
 	}
 }
 
-static void displayVectorContents(double array[], int size) {
-	int i;
-	printf("Vector contains: [");
+
+static void checkAccuracy(double Z[], double Z_1[], int size) {
+	int i, a_counter = 0; // Innaccuracy counter
+
 	for (i = 0; i < size; i++) {
-		printf("%.2lf, ", array[i]);
+		if (Z[i] != Z_1[i]) {
+			a_counter++;
+		}
 	}
-	printf("]\n");
+	if (a_counter > 0)
+		printf("x86-64 kernel output is incorrect %d times", a_counter);
+	else
+		printf("86-64 kernel output is correct");
 }
 
-int main(int argc, char* argv[]) {
-	srand(123);
-	double a = 2.0;
-	clock_t t;
 
+// Performs dapxy function 30 times using C kernel
+// Returns: average execution time of 30 runs 
+static double runCKernelTests(double X[], double Y[], double Z[], float a) {
+	int i;
+	double current_timeC;
+	double total_timeC = 0;
+	double avg_timeC;
+	clock_t start, end;
 
-	// Populate X and Y
-	printf("Populating Vector X...\n");
-	fillArray(X, N);
-	displayVectorContents(X, N);
-	printf("Populating Vector Y... \n");
-	fillArray(Y, N);
-	displayVectorContents(Y, N);
+	// Execute 30 times for testing
+	for (i = 0; i < 30; i++) {
+		printf("   %d  \t\t\t", i + 1);
 
-	// Execute algorithm for x86-64 Kernel
-	printf("\nx86-64 Run:\n");
+		start = clock();			// Clock start time
+		daxpy(a, X, Y, Z, N);		// Perform DAXPY for C
+		end = clock();				// Clock end time
 
-	// Point the current assembly to the X vector array (IDK WHY WE NEED TO DO THIS)
-	double d1 = *X; 
+		current_timeC = ((double)(end - start)) / CLOCKS_PER_SEC; // Calculate time of current run in seconds
+		total_timeC += current_timeC; // Add to total time in seconds
+		printf("%f       \t\t\n", current_timeC);
+	}
 
-	// Multiply each value in X by A
-	printf("\nMultiplying all values in X by A...\n");
-	scalarMultiply(N, X, Z, a);
-	displayVectorContents(X, N);
+	avg_timeC = total_timeC / 30.0;
 
-	// Add Z (which contains A * X) and Y together
-	printf("\nAdding A * X and Y together...\n");
-	vectorAddition(N, Z, Y);
-
-	printf("\nFinal Results in Vector Z: \n");
-	displayVectorContents(Z, N);
-	
-
-
-	// Execute algorithm for C kernel
-
-	printf("\nC Kernel Run:\n\n");
-	t = clock(); // Clock start time
-	daxpy(a, X, Y, Z, N); // Perform DAXPY for C
-	t = clock() - t; // Clock end time
-
-	double time = ((double)(t)) / CLOCKS_PER_SEC; // Calculate total time
-
-	// TODO: change this N to 10 again.
-	for (int i = 0; i < N; i++) {
+	// Print the first 10 values of Z (REMOVE THIS WHEN ACCURACY CHECK IS FULLY COMPLETED.
+	for (int i = 0; i < 10; i++) {
 		printf("%.2f | %.2f = %.2f\n", X[i], Y[i], Z[i]);
 	}
-	printf("Seconds: %f\n", time);
+
+	return avg_timeC;
+}
 
 
+// Performs dapxy function 30 times using x86-64 kernel
+// Returns: average execution time of 30 runs 
+static double runASMKernelTests(double X[], double Y[], double Z[], float a) {
+	int i;
+	double current_timeASM, avg_timeASM, total_timeASM = 0, d1;
+	clock_t start, end;
+
+	for (i = 0; i < 30; i++) {
+		printf("   %d  \t\t\t", i + 1);
+
+		start = clock();
+		d1 = *X;
+		scalarMultiply(N, X, Z, a);
+		vectorAddition(N, Z, Y);
+		end = clock();
+
+		current_timeASM = ((double)(end - start)) / CLOCKS_PER_SEC; // Calculate time of current run in seconds
+		total_timeASM += current_timeASM; // Add to total time in seconds
+		printf("%f       \t\t\n", current_timeASM);
+	}
+
+	avg_timeASM = total_timeASM / 30.0;
+
+	// Print the first 10 values of Z (REMOVE THIS WHEN ACCURACY CHECK IS FULLY COMPLETED.
+	for (int i = 0; i < 10; i++) {
+		printf("%.2f | %.2f = %.2f\n", X[i], Y[i], Z[i]);
+	}
+
+	return avg_timeASM;
+}
 
 
-	
+int main(int argc, char* argv[]) {
+	float a = 2.0;
+	double avg_timeC, avg_timeASM;
+
+	srand(123); // Seed for reproducibility
+
+	// Populate X and Y
+	fillArray(X, N);
+	fillArray(Y, N);
+
+	printf("Executing 30 tests for C Kernel...\n");
+	printf("Test No.\t\tC-Kernel Time\n");
+	avg_timeC = runCKernelTests(X, Y, Z_C_kernel, a);
+	printf("\n\n---------------------------------------------\n\n");
+
+	printf("Executing 30 tests for x86-64 Kernel...\n");
+	printf("Test No.\t\tx86-64 Kernel Time\n");
+	avg_timeASM = runASMKernelTests(X, Y, Z_ASM_kernel, a);
+
+	printf("\n\n---------------------------------------------\n\n");
+	printf("\nAVERAGE TIMES: \n");
+	printf("C Kernel: %f\n", avg_timeC);
+	printf("x86-64 Kernel: %f", avg_timeASM);
+	printf("\n\n---------------------------------------------\n\n");
 	return 0;
 }
