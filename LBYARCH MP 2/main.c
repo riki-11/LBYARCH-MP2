@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 	// Multiply each value in X by A
 	double result = scalarMultiply(a, X, N);
 	printf("RESULT: %f\n\n", result);
-
+	displayVectorContents(X, N);
 
 	// Execute algorithm for C kernel
 	printf("\nC Kernel Run\n");
