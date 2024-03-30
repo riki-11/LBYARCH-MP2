@@ -1,26 +1,19 @@
 section .data
-msg1 db "Hello World", 13, 10, 0
 
 section .text
 bits 64
 default rel
 
-global intsum
-extern printf
+global doublesum
+global scalarMultiply
 
-intsum: 
-	push rsi ; save non-volatile if needed
-	push rdi ;
-	push rbp ; setup frame
-	mov rbp, rsp 
-	mov rcx, msg1
+doublesum:
+	addsd xmm0, xmm2
+	addsd xmm0, xmm1 ; xmm0 in 1st param, xmm1 in 2nd param, answer in xmm0
+	
+	ret
 
-	mov rax, rcx ;1st parameter
-	add rax, rdx ; 2nd parameter
-	add rax, r8 ; 3rd parameter
-
-	pop rbp
-	pop rsi
-	pop rdi
-
+scalarMultiply:
+	movss xmm10, xmm0 ; move the value of to another register
+	movsd xmm0, [rcx+16] ; access the first value of the vector
 	ret
