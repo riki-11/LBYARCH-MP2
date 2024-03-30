@@ -1,11 +1,12 @@
 section .data
-
+vectorsize dq 0
 section .text
 bits 64
 default rel
 
 global doublesum
 global scalarMultiply
+global getVectorSize
 
 doublesum:
 	addsd xmm0, xmm2
@@ -14,6 +15,11 @@ doublesum:
 	ret
 
 scalarMultiply:
-	movss xmm10, xmm0 ; move the value of to another register
-	movsd xmm0, [rcx+16] ; access the first value of the vector
+	movsd [vectorsize], xmm0 ; Move A to a variable
+	movsd xmm0, [rcx] ; access the first value of the vector
+	MULSD xmm0, [vectorsize] ; multiply the first value of the vector by A
+	ret
+
+getVectorSize:
+	mov rax, rcx
 	ret

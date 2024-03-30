@@ -10,7 +10,8 @@
 
 // Import ASM functions
 extern double doublesum(double d1, double d2, double vectorSize);
-extern double scalarMultiply(float a, double vector[]);
+extern double scalarMultiply(double a, double vector[], long long int vectorSize);
+extern long long int getVectorSize(long long int vectorSize);
 
 // Declare Vectors as Arrays
 double X[N];
@@ -40,7 +41,7 @@ static void displayVectorContents(double array[], int size) {
 
 int main(int argc, char* argv[]) {
 	srand(123);
-	float a = 2.0;
+	double a = 2.0;
 	clock_t t;
 
 
@@ -55,11 +56,14 @@ int main(int argc, char* argv[]) {
 	// Execute algorithm for x86-64 Kernel
 	printf("\nx86-64 Run:\n");
 
+	long long int vectorSize = N;
+	printf("Vector Size is: %lli\n", getVectorSize(vectorSize));
+
 	// Point the current assembly to the X vector array (IDK WHY WE NEED TO DO THIS)
 	double d1 = *X; 
 
 	// Multiply each value in X by A
-	double result = scalarMultiply(a, X);
+	double result = scalarMultiply(a, X, N);
 	printf("RESULT: %f\n\n", result);
 
 
