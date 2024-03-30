@@ -6,22 +6,19 @@
 // Contains DAXPY operation for C
 #include "daxpy.h"
 
+
 // Import ASM functions
 extern void scalarMultiply(long long int vectorSize, double origVector[], double resultVector[], double a);
 extern void vectorAddition(long long int vectorSize, double vector1[], double vector2[]);
-
 
 //#define N 67108864 // 2^26
 #define N 16777216 // 2^24
 //#define N 1048576  // 2^20
 
-// #define N 10
-
 double X[N];
 double Y[N];
 double Z_C_kernel[N]; // Where Results for DAXPY is stored (For kernel C)
 double Z_ASM_kernel[N]; // Results for DAXPY is stored (for x86-64 kernel)
-
 
 
 static void fillArray(double array[], int size) {
@@ -136,5 +133,6 @@ int main(int argc, char* argv[]) {
 	printf("C Kernel: %f\n", avg_timeC);
 	printf("x86-64 Kernel: %f", avg_timeASM);
 	printf("\n\n---------------------------------------------\n\n");
+
 	return 0;
 }
