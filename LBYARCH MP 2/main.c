@@ -107,7 +107,9 @@ int main(int argc, char* argv[]) {
 	double* X = NULL, * Y = NULL, * Z_C_kernel = NULL, * Z_ASM_kernel = NULL;
 
 
-	srand(123); // Seed for reproducibility
+	//srand(time(NULL));		// Random values
+	srand(123);				// Seed for reproducibility
+
 
 	// Allocate memory
 	X = (double*)malloc(sizeof(double) * N);
