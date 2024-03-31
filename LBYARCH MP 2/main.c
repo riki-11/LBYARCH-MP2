@@ -11,9 +11,9 @@
 extern void scalarMultiply(long long int vectorSize, double origVector[], double resultVector[], double a);
 extern void vectorAddition(long long int vectorSize, double vector1[], double vector2[]);
 
-//#define N 268435456 // 2^28
-//#define N 16777216 // 2^24
-#define N 1048576  // 2^20
+#define N 268435456 // 2^28
+// #define N 16777216 // 2^24
+//#define N 1048576  // 2^20
 
 
 static void fillArray(double array[], int size) {
@@ -42,7 +42,7 @@ static void checkAccuracy(double C[], double ASM[], int size) {
 	if (a_counter > 0)
 		printf("\nx86-64 kernel output was incorrect %d times", a_counter);
 	else
-		printf("\n86-64 kernel outputs are correct");
+		printf("\nx86-64 kernel outputs are correct");
 }
 
 
