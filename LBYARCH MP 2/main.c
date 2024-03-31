@@ -143,8 +143,8 @@ int main(int argc, char* argv[]) {
 
 	printf("\n\n---------------------------------------------\n");
 	printf("\nAVERAGE TIMES w/ N = %ld: \n", N);
-	printf("C Kernel: %f\n", avg_timeC);
-	printf("x86-64 Kernel: %f", avg_timeASM);
+	printf("C Kernel: %f seconds\n", avg_timeC);
+	printf("x86-64 Kernel: %f seconds", avg_timeASM);
 	printf("\n\n---------------------------------------------\n\n");
 
 	free(X);
