@@ -24,23 +24,30 @@ double Z_ASM_kernel[N]; // Results for DAXPY is stored (for x86-64 kernel)
 static void fillArray(double array[], int size) {
 	int i;
 	for (i = 0; i < size; i++) {
-		array[i] = (double)rand() / RAND_MAX * 100.0;
+		array[i] = (double)rand() / RAND_MAX * 100.0; // FIll array with numbers from 0-100
 	}
 }
 
 
-static void checkAccuracy(double Z[], double Z_1[], int size) {
+static void checkAccuracy(double C[], double ASM[], int size) {
 	int i, a_counter = 0; // Innaccuracy counter
+	printf("Z VALUES\n");
+	printf("    C\t\t\tx86-64\n");
+
+	for (i = 0; i < 10; i++) {
+		printf("   %.2f\t | \t%.2f\n", C[i], ASM[i]);
+	}
+
 
 	for (i = 0; i < size; i++) {
-		if (Z[i] != Z_1[i]) {
+		if (C[i] != ASM[i]) {
 			a_counter++;
 		}
 	}
 	if (a_counter > 0)
-		printf("x86-64 kernel output is incorrect %d times", a_counter);
+		printf("\nx86-64 kernel output was incorrect %d times", a_counter);
 	else
-		printf("86-64 kernel output is correct");
+		printf("\n86-64 kernel outputs are correct");
 }
 
 
@@ -68,11 +75,6 @@ static double runCKernelTests(double X[], double Y[], double Z[], float a) {
 
 	avg_timeC = total_timeC / 30.0;
 
-	// Print the first 10 values of Z (REMOVE THIS WHEN ACCURACY CHECK IS FULLY COMPLETED.
-	for (int i = 0; i < 10; i++) {
-		printf("%.2f | %.2f = %.2f\n", X[i], Y[i], Z[i]);
-	}
-
 	return avg_timeC;
 }
 
@@ -88,7 +90,7 @@ static double runASMKernelTests(double X[], double Y[], double Z[], float a) {
 		printf("   %d  \t\t\t", i + 1);
 
 		start = clock();
-		d1 = *X;
+		//d1 = *X;
 		scalarMultiply(N, X, Z, a);
 		vectorAddition(N, Z, Y);
 		end = clock();
@@ -99,11 +101,6 @@ static double runASMKernelTests(double X[], double Y[], double Z[], float a) {
 	}
 
 	avg_timeASM = total_timeASM / 30.0;
-
-	// Print the first 10 values of Z (REMOVE THIS WHEN ACCURACY CHECK IS FULLY COMPLETED.
-	for (int i = 0; i < 10; i++) {
-		printf("%.2f | %.2f = %.2f\n", X[i], Y[i], Z[i]);
-	}
 
 	return avg_timeASM;
 }
@@ -119,6 +116,9 @@ int main(int argc, char* argv[]) {
 	fillArray(X, N);
 	fillArray(Y, N);
 
+	printf("N = %ld (2^24)\n\n", N);
+
+
 	printf("Executing 30 tests for C Kernel...\n");
 	printf("Test No.\t\tC-Kernel Time\n");
 	avg_timeC = runCKernelTests(X, Y, Z_C_kernel, a);
@@ -127,12 +127,18 @@ int main(int argc, char* argv[]) {
 	printf("Executing 30 tests for x86-64 Kernel...\n");
 	printf("Test No.\t\tx86-64 Kernel Time\n");
 	avg_timeASM = runASMKernelTests(X, Y, Z_ASM_kernel, a);
-
 	printf("\n\n---------------------------------------------\n\n");
-	printf("\nAVERAGE TIMES: \n");
+
+	printf("Running accuracy test ...\n");
+	checkAccuracy(Z_C_kernel, Z_ASM_kernel, N);
+
+	printf("\n\n---------------------------------------------\n");
+	printf("\nAVERAGE TIMES w/ N = %ld: \n", N);
 	printf("C Kernel: %f\n", avg_timeC);
 	printf("x86-64 Kernel: %f", avg_timeASM);
 	printf("\n\n---------------------------------------------\n\n");
+
+
 
 	return 0;
 }
