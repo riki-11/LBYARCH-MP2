@@ -11,14 +11,13 @@
 extern void scalarMultiply(long long int vectorSize, double origVector[], double resultVector[], double a);
 extern void vectorAddition(long long int vectorSize, double vector1[], double vector2[]);
 
+//#define N 1073741824 // 2^30
+//#define N 536870912 // 2^29
+#define N 268435456 // 2^28
+//#define N 134217728 // 2^27
 //#define N 67108864 // 2^26
-#define N 16777216 // 2^24
+//#define N 16777216 // 2^24
 //#define N 1048576  // 2^20
-
-double X[N];
-double Y[N];
-double Z_C_kernel[N]; // Where Results for DAXPY is stored (For kernel C)
-double Z_ASM_kernel[N]; // Results for DAXPY is stored (for x86-64 kernel)
 
 
 static void fillArray(double array[], int size) {
@@ -109,14 +108,27 @@ int main(int argc, char* argv[]) {
 	float a = 2.0;
 	double avg_timeC, avg_timeASM;
 
+	double* X = NULL, * Y = NULL, * Z_C_kernel = NULL, * Z_ASM_kernel = NULL;
+
+
 	srand(123); // Seed for reproducibility
+
+	// Allocate memory
+	X = (double*)malloc(sizeof(double) * N);
+	Y = (double*)malloc(sizeof(double) * N);
+	Z_C_kernel = (double*)malloc(sizeof(double) * N);
+	Z_ASM_kernel = (double*)malloc(sizeof(double) * N);
+
+	if (X == NULL || Y == NULL || Z_C_kernel == NULL || Z_ASM_kernel == NULL) {
+		printf("Memory allocation failed.");
+		return 1;
+	}
 
 	// Populate X and Y
 	fillArray(X, N);
 	fillArray(Y, N);
 
-	printf("N = %ld (2^24)\n\n", N);
-
+	printf("N = %ld\n\n", N);
 
 	printf("Executing 30 tests for C Kernel...\n");
 	printf("Test No.\t\tC-Kernel Time\n");
@@ -137,7 +149,10 @@ int main(int argc, char* argv[]) {
 	printf("x86-64 Kernel: %f", avg_timeASM);
 	printf("\n\n---------------------------------------------\n\n");
 
-
+	free(X);
+	free(Y);
+	free(Z_C_kernel);
+	free(Z_ASM_kernel);
 
 	return 0;
 }
