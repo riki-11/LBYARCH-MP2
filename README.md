@@ -21,12 +21,15 @@ This is likely due to the group's x86-64 implementation requiring two function c
 The screenshots below showcase evidence of runtime and correctness checks for all three variables:
 
 for `N = 2^20`
+
 ![Screenshot-of-output-for-N=2^20](./screenshots/N_220.jpg)
 
-
+---
 for `N = 2^24`
+
 ![Screenshot-of-output-for-N=2^24](./screenshots/N_224.jpg)
 
-
+---
 for `N = 2^28`
+
 ![Screenshot-of-output-for-N=2^28](./screenshots/N_228.jpg)
