@@ -83,14 +83,13 @@ static double runCKernelTests(double X[], double Y[], double Z[], float a) {
 // Returns: average execution time of 30 runs 
 static double runASMKernelTests(double X[], double Y[], double Z[], float a) {
 	int i;
-	double current_timeASM, avg_timeASM, total_timeASM = 0, d1;
+	double current_timeASM, avg_timeASM, total_timeASM = 0;
 	clock_t start, end;
 
 	for (i = 0; i < 30; i++) {
 		printf("   %d  \t\t\t", i + 1);
 
 		start = clock();
-		//d1 = *X;
 		scalarMultiply(N, X, Z, a);
 		vectorAddition(N, Z, Y);
 		end = clock();
